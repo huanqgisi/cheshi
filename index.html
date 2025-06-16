@@ -396,6 +396,48 @@
       border-radius: 4px;
     }
     
+    /* 新增样式 */
+    .important-tag {
+      position: absolute;
+      top: -6px;
+      left: -6px;
+      background: #ff4757;
+      color: white;
+      font-size: 12px;
+      padding: 2px 8px;
+      border-radius: 30px;
+      font-weight: bold;
+    }
+    
+    .back-to-top {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 100;
+    }
+    
+    .back-to-top.visible {
+      opacity: 1;
+    }
+    
+    .back-to-top:hover {
+      background: var(--primary-light);
+      transform: translateY(-3px);
+    }
+    
     @keyframes pulse {
       0% { transform: scale(1); }
       50% { transform: scale(1.1); }
@@ -427,6 +469,14 @@
 
       .batch-buttons {
         flex-direction: column;
+      }
+      
+      .back-to-top {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+        bottom: 20px;
+        right: 20px;
       }
     }
   </style>
@@ -492,7 +542,10 @@
     </div>
   </div>
 
- <script>
+  <!-- 新增返回顶部按钮 -->
+  <div class="back-to-top" id="backToTopBtn" title="返回顶部">↑</div>
+
+  <script>
     // 初始化数据
     let linkData = {};
     const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
@@ -642,6 +695,7 @@
         filteredLinks.forEach((link, index) => {
           sectionHTML += `
             <div class="link-card">
+              ${link.level >= 4 ? '<span class="important-tag">重点</span>' : ''}
               ${link.isNew ? '<span class="new-badge">NEW</span>' : ''}
               <a href="${link.url}" target="_blank" class="link-name">${link.name}</a>
               ${isAdmin ? `
@@ -751,6 +805,24 @@
     function handleSearch() {
       renderContent();
     }
+
+    // 返回顶部功能
+    const backToTopBtn = document.getElementById('backToTopBtn');
+    
+    window.addEventListener('scroll', () => {
+      if (window.pageYOffset > 300) {
+        backToTopBtn.classList.add('visible');
+      } else {
+        backToTopBtn.classList.remove('visible');
+      }
+    });
+    
+    backToTopBtn.addEventListener('click', () => {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    });
 
     // 设置事件监听器
     function setupEventListeners() {
