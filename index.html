@@ -695,7 +695,7 @@
         filteredLinks.forEach((link, index) => {
           sectionHTML += `
             <div class="link-card">
-              ${link.level >= 4 ? '<span class="important-tag">重点</span>' : ''}
+              ${link.level >= 3 ? '<span class="important-tag">重点</span>' : ''}
               ${link.isNew ? '<span class="new-badge">NEW</span>' : ''}
               <a href="${link.url}" target="_blank" class="link-name">${link.name}</a>
               ${isAdmin ? `
