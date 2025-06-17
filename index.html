@@ -126,44 +126,63 @@
     /* 修改后的字母导航样式 */
     .letter-nav {
       display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
+      flex-direction: column;
       gap: 0.5rem;
       margin-bottom: 2rem;
       transition: var(--transition);
+      max-height: calc(100vh - 200px);
+      overflow-y: auto;
+      padding: 10px 5px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary) rgba(0,0,0,0.1);
     }
 
     .letter-nav.fixed {
       position: fixed;
-      left: 20px;
+      right: 20px;
       top: 50%;
       transform: translateY(-50%);
-      flex-direction: column;
       margin-bottom: 0;
       z-index: 90;
       background: var(--card-bg);
       backdrop-filter: blur(10px);
-      padding: 1rem;
+      padding: 15px 10px;
       border-radius: 30px;
       box-shadow: var(--box-shadow);
     }
 
+    /* 自定义滚动条 */
+    .letter-nav::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .letter-nav::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.1);
+      border-radius: 2px;
+    }
+
+    .letter-nav::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 2px;
+    }
+
     .letter-btn {
-      width: 48px;
-      height: 48px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       background: var(--card-bg);
       backdrop-filter: blur(10px);
       border: none;
       color: var(--primary);
       font-weight: bold;
-      font-size: 1.1rem;
+      font-size: 1rem;
       cursor: pointer;
       transition: var(--transition);
       box-shadow: var(--box-shadow);
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
     }
 
     .letter-btn:hover, .letter-btn.active {
@@ -474,6 +493,12 @@
         width: 100%;
       }
       
+      .letter-nav.fixed {
+        right: 10px;
+        padding: 10px 5px;
+        max-height: calc(100vh - 150px);
+      }
+      
       .letter-btn {
         width: 36px;
         height: 36px;
@@ -495,10 +520,18 @@
         bottom: 20px;
         right: 20px;
       }
-      
+    }
+
+    @media (max-width: 480px) {
       .letter-nav.fixed {
-        left: 10px;
-        padding: 0.5rem;
+        right: 5px;
+        padding: 8px 3px;
+      }
+      
+      .letter-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
       }
     }
   </style>
@@ -507,8 +540,7 @@
   <div class="container">
     <header>
       <h1>FREETON-竞品链接查找系统</h1>
-      <p class="subtitle">©2025 POWERED BY BRACE 
-      </p>
+      <p class="subtitle">©2025 POWERED BY BRACE</p>
     </header>
 
     <div class="toolbar">
@@ -520,8 +552,6 @@
       </button>
     </div>
 
-    <div class="letter-nav" id="letterNav"></div>
-    
     <div class="content" id="content">
       <div class="empty-state">
         <p>正在加载链接数据...</p>
@@ -564,6 +594,8 @@
     </div>
   </div>
 
+  <!-- 字母导航移到body末尾 -->
+  <div class="letter-nav" id="letterNav"></div>
   <div class="back-to-top" id="backToTopBtn" title="返回顶部">↑</div>
 
   <script>
@@ -668,11 +700,18 @@
         btn.className = "letter-btn";
         btn.textContent = letter;
         btn.dataset.letter = letter;
+        btn.title = `跳转到字母 ${letter}`;
         btn.addEventListener("click", () => {
           document.querySelectorAll(".letter-btn").forEach(b => b.classList.remove("active"));
           btn.classList.add("active");
           const section = document.getElementById(`section-${letter}`);
-          if (section) section.scrollIntoView({ behavior: "smooth", block: "start" });
+          if (section) {
+            const sectionTop = section.offsetTop - 20;
+            window.scrollTo({
+              top: sectionTop,
+              behavior: "smooth"
+            });
+          }
         });
         letterNavEl.appendChild(btn);
       });
@@ -745,6 +784,70 @@
       
       // 渲染完成后触发一次滚动处理
       setTimeout(handleScroll, 100);
+    }
+
+    // 处理滚动事件
+    function handleScroll() {
+      const letterNav = document.querySelector('.letter-nav');
+      const scrollPosition = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const navHeight = letterNav.offsetHeight;
+      
+      // 当滚动超过100px时固定导航
+      if (scrollPosition > 100) {
+        letterNav.classList.add('fixed');
+        
+        // 动态调整位置，确保不会超出可视区域
+        const maxTop = windowHeight - navHeight - 20;
+        const newTop = Math.min(maxTop, 100 + (windowHeight - navHeight) / 2);
+        
+        letterNav.style.top = `${newTop}px`;
+        letterNav.style.transform = 'none';
+      } else {
+        letterNav.classList.remove('fixed');
+        letterNav.style.top = '';
+        letterNav.style.transform = '';
+      }
+      
+      // 高亮当前可见的字母部分
+      highlightVisibleSection();
+      
+      // 显示/隐藏返回顶部按钮
+      const backToTopBtn = document.getElementById('backToTopBtn');
+      if (scrollPosition > 300) {
+        backToTopBtn.classList.add('visible');
+      } else {
+        backToTopBtn.classList.remove('visible');
+      }
+    }
+
+    // 高亮当前可见的字母部分
+    function highlightVisibleSection() {
+      const sections = document.querySelectorAll('.letter-section');
+      const navButtons = document.querySelectorAll('.letter-btn');
+      
+      // 重置所有按钮状态
+      navButtons.forEach(btn => btn.classList.remove('active'));
+      
+      // 查找当前可见的section
+      let currentSection = null;
+      const offset = 100; // 提前100px触发切换
+      
+      sections.forEach(section => {
+        const rect = section.getBoundingClientRect();
+        if (rect.top <= offset && rect.bottom >= offset) {
+          currentSection = section;
+        }
+      });
+      
+      // 高亮对应的导航按钮
+      if (currentSection) {
+        const letter = currentSection.id.split('-')[1];
+        const correspondingBtn = document.querySelector(`.letter-btn[data-letter="${letter}"]`);
+        if (correspondingBtn) {
+          correspondingBtn.classList.add('active');
+        }
+      }
     }
 
     // 更新等级
@@ -826,59 +929,6 @@
     // 搜索处理
     function handleSearch() {
       renderContent();
-    }
-
-    // 处理滚动事件
-    function handleScroll() {
-      const letterNav = document.querySelector('.letter-nav');
-      const scrollPosition = window.scrollY;
-      
-      // 当滚动超过100px时固定导航
-      if (scrollPosition > 100) {
-        letterNav.classList.add('fixed');
-      } else {
-        letterNav.classList.remove('fixed');
-      }
-      
-      // 高亮当前可见的字母部分
-      highlightVisibleSection();
-      
-      // 显示/隐藏返回顶部按钮
-      const backToTopBtn = document.getElementById('backToTopBtn');
-      if (scrollPosition > 300) {
-        backToTopBtn.classList.add('visible');
-      } else {
-        backToTopBtn.classList.remove('visible');
-      }
-    }
-
-    // 高亮当前可见的字母部分
-    function highlightVisibleSection() {
-      const sections = document.querySelectorAll('.letter-section');
-      const navButtons = document.querySelectorAll('.letter-btn');
-      
-      // 重置所有按钮状态
-      navButtons.forEach(btn => btn.classList.remove('active'));
-      
-      // 查找当前可见的section
-      let currentSection = null;
-      const offset = 100; // 提前100px触发切换
-      
-      sections.forEach(section => {
-        const rect = section.getBoundingClientRect();
-        if (rect.top <= offset && rect.bottom >= offset) {
-          currentSection = section;
-        }
-      });
-      
-      // 高亮对应的导航按钮
-      if (currentSection) {
-        const letter = currentSection.id.split('-')[1];
-        const correspondingBtn = document.querySelector(`.letter-btn[data-letter="${letter}"]`);
-        if (correspondingBtn) {
-          correspondingBtn.classList.add('active');
-        }
-      }
     }
 
     // 设置事件监听器
