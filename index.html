@@ -84,6 +84,7 @@
             font-size: 1rem;
             transition: var(--transition);
             padding-left: 3rem;
+            padding-right: 2.5rem;
         }
 
         .search-box input:focus {
@@ -91,14 +92,41 @@
             box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
         }
 
-        .search-box::before {
-            content: '🔍';
+        .search-icon {
             position: absolute;
             left: 1.2rem;
             top: 50%;
             transform: translateY(-50%);
             font-size: 1.2rem;
             opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .clear-btn {
+            position: absolute;
+            right: 1.2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: var(--transition);
+            background: none;
+            border: none;
+            color: var(--text-light);
+            padding: 0.2rem;
+            border-radius: 50%;
+        }
+
+        .clear-btn:hover {
+            color: var(--text);
+            background: rgba(0,0,0,0.05);
+        }
+
+        .clear-btn.visible {
+            opacity: 1;
+            visibility: visible;
         }
 
         .btn {
@@ -135,13 +163,13 @@
         /* 侧边字母导航 - 调整后的样式 */
         .letter-nav-side {
             position: fixed;
-            right: 4px; /* 更靠边 */
+            right: 4px;
             top: 50%;
             transform: translateY(-50%);
             display: flex;
             flex-direction: column;
             gap: 3px;
-            z-index: 90; /* 低于返回顶部按钮 */
+            z-index: 90;
             background: var(--card-bg);
             backdrop-filter: blur(10px);
             padding: 10px 3px;
@@ -460,7 +488,7 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             opacity: 0;
             transition: all 0.3s ease;
-            z-index: 100; /* 确保在侧边导航之上 */
+            z-index: 100;
         }
 
         .back-to-top.visible {
@@ -530,6 +558,7 @@
     <div class="toolbar">
         <div class="search-box">
             <input type="text" id="searchInput" placeholder="搜索链接..." />
+            <button class="clear-btn" id="clearSearchBtn">×</button>
         </div>
         <button id="adminLoginBtn" class="btn">
             <i>🔐</i> 管理员登录
@@ -919,7 +948,22 @@
 
     // 设置事件监听器
     function setupEventListeners() {
-        document.getElementById("searchInput").addEventListener("input", handleSearch);
+        const searchInput = document.getElementById("searchInput");
+        const clearSearchBtn = document.getElementById("clearSearchBtn");
+
+        // 搜索框和清除按钮功能
+        searchInput.addEventListener('input', function() {
+            clearSearchBtn.classList.toggle('visible', this.value.length > 0);
+            handleSearch();
+        });
+
+        clearSearchBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            this.classList.remove('visible');
+            handleSearch();
+            searchInput.focus();
+        });
+
         document.getElementById("adminLoginBtn").addEventListener("click", adminLogin);
         document.getElementById("addLinkBtn").addEventListener("click", addLink);
         backToTopBtn.addEventListener('click', scrollToTop);
