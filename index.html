@@ -7,10 +7,10 @@
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap');
 
         :root {
-            --primary: #2b7de7;
-            --primary-light: #4895ef;
+            --primary: #ffffff;
+            --primary-light: #878787;
             --text: #2b2d42;
-            --text-light: #8d99ae;
+            --text-light: #b3b3b3;
             --bg: #ffffff;
             --card-bg: rgba(255, 255, 255, 0.85);
             --border-radius: 50px;
@@ -33,6 +33,20 @@
             line-height: 1.6;
             background: url('https://bing.img.run/uhd.php') no-repeat center center fixed;
             background-size: cover;
+            position: relative;
+        }
+
+        /* 新增：背景覆盖层 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 300px; /* 覆盖标题区域的高度 */
+            background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 70%, transparent 100%);
+            z-index: -1;
+            pointer-events: none;
         }
 
         .container {
@@ -49,14 +63,15 @@
         h1 {
             font-size: 2.5rem;
             font-weight: 700;
-            color: var(--primary);
+            color: white; /* 修改为白色 */
             margin-bottom: 0.5rem;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* 增强阴影提高可读性 */
         }
 
         .subtitle {
-            color: var(--text-light);
+            color: rgba(255,255,255,0.8); /* 修改为半透明白色 */
             font-size: 1.1rem;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
 
         .toolbar {
@@ -139,7 +154,7 @@
             border: none;
             border-radius: var(--border-radius);
             background: var(--primary);
-            color: white;
+            color: #6a6a6a;
             font-size: 1rem;
             font-weight: 500;
             cursor: pointer;
@@ -200,7 +215,7 @@
             background: var(--card-bg);
             backdrop-filter: blur(10px);
             border: none;
-            color: var(--primary);
+            color: #808080;
             font-weight: bold;
             font-size: 1.1rem;
             cursor: pointer;
@@ -221,7 +236,7 @@
         }
 
         .letter-btn:hover, .letter-btn.active {
-            background: var(--primary);
+            background: #aaaaaa;
             color: white;
             transform: scale(1.1);
         }
@@ -259,7 +274,7 @@
             align-items: center;
             justify-content: center;
             background: var(--primary);
-            color: white;
+            color: #636363;
             border-radius: 50%;
         }
 
@@ -292,12 +307,12 @@
         .link-card:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(67, 97, 238, 0.1);
-            background: white;
+            background: #ffffff;
         }
 
         .link-name {
             font-weight: 500;
-            color: var(--primary);
+            color:var(--primary-light);
             text-decoration: none;
             font-size: 1rem;
             transition: var(--transition);
@@ -305,7 +320,7 @@
         }
 
         .link-name.important {
-            color: var(--important-color);
+            color: #dc4f4f;
             font-weight: 700;
         }
 
@@ -404,7 +419,7 @@
 
         .batch-format {
             font-size: 0.8rem;
-            color: var(--text-light);
+            color: #ffffff;
             margin-bottom: 1rem;
         }
 
@@ -422,7 +437,7 @@
             height: 50px;
             border-radius: 50%;
             background: var(--primary);
-            color: white;
+            color: #505050;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -441,6 +456,27 @@
         .back-to-top:hover {
             background: var(--primary-light);
             transform: translateY(-3px);
+        }
+
+        /* 新增的搜索提示样式 */
+        .search-hint {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+            pointer-events: none;
+        }
+
+        .search-hint.show {
+            opacity: 1;
         }
 
         @keyframes pulse {
@@ -493,6 +529,9 @@
 </head>
 <body>
 <div class="container">
+    <!-- 新增的搜索提示元素 -->
+    <div class="search-hint" id="searchHint">已聚焦搜索框</div>
+
     <header>
         <h1>FREETON-竞品链接查找系统</h1>
         <p class="subtitle">©2025 POWERED BY BRACE</p>
@@ -543,6 +582,11 @@
     const letterNavSideEl = document.getElementById("letterNavSide");
     const backToTopBtn = document.getElementById("backToTopBtn");
     let lastUpdateTime = null;
+    let searchInput = document.getElementById("searchInput");
+    let searchHint = document.getElementById("searchHint");
+    let lastKeyPressTime = 0;
+    let currentInputString = '';
+    let inputTimer = null;
 
     // 从GitHub获取数据
     async function fetchData() {
@@ -763,6 +807,48 @@
         });
     }
 
+    // 显示搜索提示
+    function showSearchHint() {
+        searchHint.classList.add('show');
+        setTimeout(() => {
+            searchHint.classList.remove('show');
+        }, 1500);
+    }
+
+    // 处理全局键盘输入
+    function handleGlobalKeyPress(e) {
+        // 排除当焦点在输入框或文本区域时
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+            return;
+        }
+
+        // 只处理字母键
+        if (/^[a-zA-Z]$/.test(e.key)) {
+            const now = Date.now();
+
+            // 如果两次按键间隔小于500ms，认为是连续输入
+            if (now - lastKeyPressTime < 500) {
+                currentInputString += e.key.toLowerCase();
+                clearTimeout(inputTimer);
+            } else {
+                currentInputString = e.key.toLowerCase();
+            }
+
+            lastKeyPressTime = now;
+
+            // 聚焦到搜索框并设置值
+            searchInput.value = currentInputString;
+            searchInput.focus();
+            handleSearch();
+            showSearchHint();
+
+            // 设置定时器，如果500ms内没有新输入，则清空当前输入字符串
+            inputTimer = setTimeout(() => {
+                currentInputString = '';
+            }, 500);
+        }
+    }
+
     // 设置事件监听器
     function setupEventListeners() {
         const searchInput = document.getElementById("searchInput");
@@ -815,6 +901,9 @@
             // 高亮当前字母
             highlightCurrentLetter();
         });
+
+        // 新增：全局键盘事件监听
+        document.addEventListener('keypress', handleGlobalKeyPress);
     }
 
     // 初始化应用
