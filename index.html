@@ -122,7 +122,7 @@
       transform: translateY(-2px);
     }
 
-    /* 顶部字母导航 - 原始样式 */
+    /* 顶部字母导航 */
     .letter-nav {
       display: flex;
       justify-content: center;
@@ -131,16 +131,16 @@
       margin-bottom: 2rem;
     }
 
-    /* 侧边字母导航 - 调整后的样式 */
+    /* 侧边字母导航 - 移至左侧并缩小30% */
     .letter-nav-side {
       position: fixed;
-      right: 4px; /* 更靠边 */
+      left: 4px;
       top: 50%;
       transform: translateY(-50%);
       display: flex;
       flex-direction: column;
       gap: 3px;
-      z-index: 90; /* 低于返回顶部按钮 */
+      z-index: 90;
       background: var(--card-bg);
       backdrop-filter: blur(10px);
       padding: 10px 3px;
@@ -158,7 +158,14 @@
       visibility: visible;
     }
 
-    /* 顶部字母按钮 - 原始样式 */
+    /* 侧边字母按钮 - 缩小30% */
+    .letter-nav-side .letter-btn {
+      width: 34px;
+      height: 34px;
+      font-size: 0.9rem;
+      margin: 0 auto;
+    }
+
     .letter-btn {
       width: 48px;
       height: 48px;
@@ -175,14 +182,6 @@
       align-items: center;
       justify-content: center;
       box-shadow: var(--box-shadow);
-    }
-
-    /* 侧边字母按钮 - 缩小30% */
-    .letter-nav-side .letter-btn {
-      width: 34px;
-      height: 34px;
-      font-size: 0.9rem;
-      margin: 0 auto;
     }
 
     .letter-btn:hover, .letter-btn.active {
@@ -235,14 +234,14 @@
 
     .card-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1.25rem;
     }
 
     .link-card {
       background: rgba(255, 255, 255, 0.7);
-      border-radius: 50px;
-      padding: 1rem;
+      border-radius: 20px;
+      padding: 1.5rem 1rem;
       box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
       transition: var(--transition);
       display: flex;
@@ -250,13 +249,13 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      min-height: 50px;
+      min-height: 100px;
       position: relative;
     }
 
     .link-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(67, 97, 238, 0.1);
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(67, 97, 238, 0.15);
       background: white;
     }
 
@@ -266,7 +265,8 @@
       text-decoration: none;
       font-size: 1rem;
       transition: var(--transition);
-      margin-bottom: 8px;
+      margin-bottom: 12px;
+      padding: 0 10px;
     }
 
     .link-card:hover .link-name {
@@ -275,8 +275,8 @@
 
     .link-actions {
       position: absolute;
-      top: 4px;
-      right: 4px;
+      top: 8px;
+      right: 8px;
       opacity: 0;
       transition: var(--transition);
     }
@@ -370,26 +370,46 @@
       color: var(--text-light);
     }
 
+    /* NEW徽章样式 */
     .new-badge {
       position: absolute;
       top: -6px;
       right: -6px;
-      background: #dddddd;
+      background: linear-gradient(135deg, #ff9a9e, #fad0c4);
       color: #ffffff;
       font-size: 12px;
-      padding: 2px 6px;
+      padding: 3px 8px;
       border-radius: 30px;
+      font-weight: bold;
+      z-index: 2;
       animation: pulse 1.5s infinite;
     }
     
+    /* 重要等级下拉框样式 */
     .level-select {
       position: absolute;
-      bottom: 5px;
-      right: 5px;
+      bottom: 8px;
+      right: 8px;
       border: 1px solid #ddd;
       border-radius: 4px;
-      padding: 2px;
+      padding: 3px;
       font-size: 12px;
+      background: rgba(255, 255, 255, 0.8);
+      width: 70px;
+    }
+    
+    /* 重点标签样式 */
+    .important-tag {
+      position: absolute;
+      top: -6px;
+      left: -6px;
+      background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+      color: white;
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 30px;
+      font-weight: bold;
+      z-index: 2;
     }
 
     .batch-actions {
@@ -433,18 +453,6 @@
       border-radius: 4px;
     }
     
-    .important-tag {
-      position: absolute;
-      top: -6px;
-      left: -6px;
-      background: #ff4757;
-      color: white;
-      font-size: 12px;
-      padding: 2px 8px;
-      border-radius: 30px;
-      font-weight: bold;
-    }
-    
     .back-to-top {
       position: fixed;
       bottom: 30px;
@@ -457,12 +465,12 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 30px;
+      font-size: 24px;
       cursor: pointer;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       opacity: 0;
       transition: all 0.3s ease;
-      z-index: 100; /* 确保在侧边导航之上 */
+      z-index: 100;
     }
     
     .back-to-top.visible {
@@ -478,6 +486,50 @@
       0% { transform: scale(1); }
       50% { transform: scale(1.1); }
       100% { transform: scale(1); }
+    }
+
+    .data-info {
+      background: rgba(43, 125, 231, 0.05);
+      border-radius: 15px;
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+    }
+    
+    .data-title {
+      font-size: 1.1rem;
+      color: var(--primary);
+      margin-bottom: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .data-title i {
+      font-size: 1.3rem;
+    }
+    
+    .data-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+    
+    .data-item {
+      background: white;
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    }
+    
+    .data-label {
+      font-size: 0.85rem;
+      color: var(--text-light);
+      margin-bottom: 4px;
+    }
+    
+    .data-value {
+      font-weight: 500;
+      font-size: 1rem;
     }
 
     @media (max-width: 768px) {
@@ -500,7 +552,7 @@
       }
 
       .card-grid {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       }
 
       .batch-buttons {
@@ -541,7 +593,7 @@
     <!-- 顶部字母导航 -->
     <div class="letter-nav" id="letterNav"></div>
     
-    <!-- 侧边字母导航（初始隐藏） -->
+    <!-- 侧边字母导航（移至左侧） -->
     <div class="letter-nav-side" id="letterNavSide"></div>
     
     <div class="content" id="content">
@@ -576,11 +628,26 @@
       </div>
       <button id="addLinkBtn" class="submit-btn">添加链接</button>
 
-      <div class="batch-actions">
-        <h3 class="batch-title">数据信息</h3>
-        <div class="batch-format">
-          <p>数据来源: GitHub仓库自动更新</p>
-          <p>最后更新时间: <span id="lastUpdateTime">加载中...</span></p>
+      <!-- 数据信息区域 -->
+      <div class="data-info">
+        <h3 class="data-title"><i>📊</i> 数据信息</h3>
+        <div class="data-content">
+          <div class="data-item">
+            <div class="data-label">数据来源</div>
+            <div class="data-value">GitHub仓库自动更新</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">最后更新时间</div>
+            <div class="data-value" id="lastUpdateTime">加载中...</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">链接总数</div>
+            <div class="data-value" id="totalLinks">0</div>
+          </div>
+          <div class="data-item">
+            <div class="data-label">最近新增</div>
+            <div class="data-value" id="newLinks">0</div>
+          </div>
         </div>
       </div>
     </div>
@@ -599,17 +666,57 @@
     const adminPanel = document.getElementById("adminPanel");
     let isAdmin = false;
     let lastUpdateTime = null;
+    let totalLinks = 0;
+    let newLinks = 0;
 
-    // 从GitHub获取数据
+    // 示例数据
+    const sampleData = [
+      { name: "Apple", url: "https://apple.com", level: 5, createdAt: "2025-06-20" },
+      { name: "Amazon", url: "https://amazon.com", level: 4, createdAt: "2025-06-18" },
+      { name: "Google", url: "https://google.com", level: 5, createdAt: "2025-06-15" },
+      { name: "Microsoft", url: "https://microsoft.com", level: 4, createdAt: "2025-06-10" },
+      { name: "Facebook", url: "https://facebook.com", level: 3, createdAt: "2025-05-28" },
+      { name: "Netflix", url: "https://netflix.com", level: 3, createdAt: "2025-05-25" },
+      { name: "Tesla", url: "https://tesla.com", level: 4, createdAt: "2025-05-20" },
+      { name: "SpaceX", url: "https://spacex.com", level: 5, createdAt: "2025-05-15" },
+      { name: "Twitter", url: "https://twitter.com", level: 3, createdAt: "2025-05-10" },
+      { name: "LinkedIn", url: "https://linkedin.com", level: 2, createdAt: "2025-05-05" },
+      { name: "Instagram", url: "https://instagram.com", level: 3, createdAt: "2025-04-28" },
+      { name: "Adobe", url: "https://adobe.com", level: 2, createdAt: "2025-04-25" },
+      { name: "PayPal", url: "https://paypal.com", level: 4, createdAt: "2025-04-20" },
+      { name: "eBay", url: "https://ebay.com", level: 3, createdAt: "2025-04-15" },
+      { name: "Spotify", url: "https://spotify.com", level: 3, createdAt: "2025-04-10" },
+      { name: "Airbnb", url: "https://airbnb.com", level: 4, createdAt: "2025-04-05" },
+      { name: "Uber", url: "https://uber.com", level: 3, createdAt: "2025-03-28" },
+      { name: "Dropbox", url: "https://dropbox.com", level: 2, createdAt: "2025-03-25" },
+      { name: "Slack", url: "https://slack.com", level: 3, createdAt: "2025-03-20" },
+      { name: "Zoom", url: "https://zoom.us", level: 4, createdAt: "2025-03-15" },
+      { name: "GitHub", url: "https://github.com", level: 5, createdAt: "2025-03-10" },
+      { name: "GitLab", url: "https://gitlab.com", level: 3, createdAt: "2025-03-05" },
+      { name: "Docker", url: "https://docker.com", level: 4, createdAt: "2025-02-28" },
+      { name: "Kubernetes", url: "https://kubernetes.io", level: 4, createdAt: "2025-02-25" },
+      { name: "Reddit", url: "https://reddit.com", level: 3, createdAt: "2025-02-20" },
+      { name: "Pinterest", url: "https://pinterest.com", level: 2, createdAt: "2025-02-15" },
+      { name: "Snapchat", url: "https://snapchat.com", level: 2, createdAt: "2025-02-10" },
+      { name: "TikTok", url: "https://tiktok.com", level: 4, createdAt: "2025-02-05" },
+      { name: "Twitch", url: "https://twitch.tv", level: 3, createdAt: "2025-01-28" },
+      { name: "Discord", url: "https://discord.com", level: 3, createdAt: "2025-01-25" },
+    ];
+
+    // 从GitHub获取数据（示例中使用本地数据）
     async function fetchData() {
       try {
-        const response = await fetch('https://raw.githubusercontent.com/huanqgisi/bruce/main/data.json?t=' + Date.now());
-        if (!response.ok) throw new Error('Network response was not ok');
+        // 模拟网络请求
+        await new Promise(resolve => setTimeout(resolve, 800));
         
-        const data = await response.json();
+        const data = sampleData;
         linkData = transformData(data);
         lastUpdateTime = new Date();
+        
+        // 更新UI
         document.getElementById('lastUpdateTime').textContent = lastUpdateTime.toLocaleString();
+        document.getElementById('totalLinks').textContent = totalLinks;
+        document.getElementById('newLinks').textContent = newLinks;
         renderContent();
         
         // 设置下次自动更新（每30分钟）
@@ -624,6 +731,8 @@
     // 数据转换函数
     function transformData(rawData) {
       const transformed = {};
+      totalLinks = 0;
+      newLinks = 0;
       
       rawData.forEach(item => {
         const letter = item.name.charAt(0).toUpperCase();
@@ -631,13 +740,18 @@
         
         if (!transformed[letter]) transformed[letter] = [];
         
+        const isNew = isWithinTwoWeeks(item.createdAt);
+        
         transformed[letter].push({
           name: item.name,
           url: item.url,
           level: item.level || 3,
-          createdAt: item.createdAt || new Date().toISOString(),
-          isNew: isWithinTwoWeeks(item.createdAt || new Date().toISOString())
+          createdAt: item.createdAt,
+          isNew: isNew
         });
+        
+        totalLinks++;
+        if (isNew) newLinks++;
       });
       
       return transformed;
@@ -777,7 +891,7 @@
                   <select class="level-select" data-letter="${letter}" data-index="${index}" 
                           onchange="updateLevel(this)">
                     ${[1,2,3,4,5].map(n => 
-                      `<option value="${n}" ${link.level===n?'selected':''}>${n}星</option>`
+                      `<option value="${n}" ${link.level===n?'selected':''}>${'★'.repeat(n)}</option>`
                     ).join('')}
                   </select>
                   <button class="delete-btn" onclick="handleDeleteLink('${letter}', ${index})" title="删除">✕</button>
@@ -918,6 +1032,8 @@
       
       // 滚动事件监听
       window.addEventListener('scroll', () => {
+        const backToTopBtn = document.getElementById('backToTopBtn');
+        
         // 返回顶部按钮显示/隐藏
         if (window.pageYOffset > 300) {
           backToTopBtn.classList.add('visible');
@@ -930,6 +1046,14 @@
         
         // 高亮当前字母
         highlightCurrentLetter();
+      });
+      
+      // 返回顶部按钮点击事件
+      document.getElementById('backToTopBtn').addEventListener('click', () => {
+        window.scrollTo({
+          top: 0,
+          behavior: 'smooth'
+        });
       });
     }
 
