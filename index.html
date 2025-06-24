@@ -646,7 +646,7 @@
     function isWithinTwoWeeks(dateStr) {
       const addedDate = new Date(dateStr);
       const twoWeeksAgo = new Date();
-      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14);
+      twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 5);
       return addedDate > twoWeeksAgo;
     }
 
