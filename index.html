@@ -428,6 +428,46 @@
             border-radius: 4px;
         }
 
+        /* 新增：统计信息样式 */
+        .stats-container {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            min-width: 120px;
+        }
+
+        .stat-value {
+            font-size: calc(2rem * 0.7);
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: calc(0.9rem * 0.7);
+            color: var(--text-light);
+        }
+
+        .stat-icon {
+            font-size: calc(2.5rem * 0.7);
+            margin-bottom: 0.5rem;
+            opacity: 0.8;
+        }
+
         .back-to-top {
             position: fixed;
             bottom: 10px;
@@ -543,6 +583,15 @@
             .letter-nav-side {
                 display: none !important;
             }
+
+            .stats-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .stat-item {
+                min-width: auto;
+            }
         }
     </style>
 </head>
@@ -590,6 +639,30 @@
             <p>最后更新时间: <span id="lastUpdateTime">加载中...</span></p>
         </div>
     </div>
+
+    <!-- 新增：统计信息区域 -->
+    <div class="stats-container" id="statsContainer">
+        <div class="stat-item">
+            <div class="stat-icon">👁️</div>
+            <div class="stat-value" id="visitCount">0</div>
+            <div class="stat-label">总访问量</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-icon">🔖</div>
+            <div class="stat-value" id="totalLinks">0</div>
+            <div class="stat-label">链接总数</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-icon">🆕</div>
+            <div class="stat-value" id="newLinks">0</div>
+            <div class="stat-label">新增链接</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-icon">⭐</div>
+            <div class="stat-value" id="importantLinks">0</div>
+            <div class="stat-label">重要链接</div>
+        </div>
+    </div>
 </div>
 
 <!-- 返回顶部按钮 -->
@@ -604,6 +677,7 @@
     const letterNavSideEl = document.getElementById("letterNavSide");
     const backToTopBtn = document.getElementById("backToTopBtn");
     const loadingState = document.getElementById("loadingState");
+    const statsContainer = document.getElementById("statsContainer");
     let lastUpdateTime = null;
     let searchInput = document.getElementById("searchInput");
     let searchHint = document.getElementById("searchHint");
@@ -612,7 +686,7 @@
     let inputTimer = null;
     let searchDebounceTimer = null;
 
-    // 防抖函数 - 优化1
+    // 防抖函数
     function debounce(func, wait) {
         let timeout;
         return function executedFunction(...args) {
@@ -625,10 +699,80 @@
         };
     }
 
+    // 访问量统计 - 使用localStorage存储
+    function updateVisitCount() {
+        let visitCount = localStorage.getItem('visitCount');
+        if (!visitCount) {
+            visitCount = 0;
+        } else {
+            visitCount = parseInt(visitCount);
+        }
+        
+        // 检查是否今天已经访问过
+        const lastVisitDate = localStorage.getItem('lastVisitDate');
+        const today = new Date().toDateString();
+        
+        if (lastVisitDate !== today) {
+            visitCount++;
+            localStorage.setItem('visitCount', visitCount);
+            localStorage.setItem('lastVisitDate', today);
+        }
+        
+        // 更新显示
+        document.getElementById('visitCount').textContent = visitCount.toLocaleString();
+        
+        // 添加动画效果
+        animateValue('visitCount', 0, visitCount, 1000);
+    }
+
+    // 数值动画效果
+    function animateValue(id, start, end, duration) {
+        if (start === end) return;
+        const obj = document.getElementById(id);
+        const range = end - start;
+        let startTime = null;
+        
+        function step(timestamp) {
+            if (!startTime) startTime = timestamp;
+            const progress = Math.min((timestamp - startTime) / duration, 1);
+            const value = Math.floor(progress * range + start);
+            obj.textContent = value.toLocaleString();
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            }
+        }
+        window.requestAnimationFrame(step);
+    }
+
+    // 计算链接统计信息
+    function calculateLinkStats() {
+        let totalLinks = 0;
+        let newLinks = 0;
+        let importantLinks = 0;
+        
+        Object.keys(linkData).forEach(letter => {
+            totalLinks += linkData[letter].length;
+            linkData[letter].forEach(link => {
+                if (link.isNew) newLinks++;
+                if (link.level >= 4) importantLinks++;
+            });
+        });
+        
+        // 更新统计信息显示
+        document.getElementById('totalLinks').textContent = totalLinks.toLocaleString();
+        document.getElementById('newLinks').textContent = newLinks.toLocaleString();
+        document.getElementById('importantLinks').textContent = importantLinks.toLocaleString();
+        
+        // 添加动画效果
+        animateValue('totalLinks', 0, totalLinks, 1000);
+        animateValue('newLinks', 0, newLinks, 1000);
+        animateValue('importantLinks', 0, importantLinks, 1000);
+    }
+
     // 从GitHub获取数据
     async function fetchData() {
         try {
-            // 显示加载状态 - 优化3
+            // 显示加载状态
             showLoadingState();
             
             const response = await fetch('https://raw.githubusercontent.com/huanqgisi/bruce/main/data.json?t=' + Date.now());
@@ -642,6 +786,10 @@
             // 隐藏加载状态
             hideLoadingState();
             renderContent();
+            
+            // 更新统计信息
+            updateVisitCount();
+            calculateLinkStats();
 
             // 设置下次自动更新（每30分钟）
             setTimeout(fetchData, 30 * 60 * 1000);
@@ -652,21 +800,23 @@
         }
     }
 
-    // 显示加载状态 - 优化3
+    // 显示加载状态
     function showLoadingState() {
         loadingState.innerHTML = `
             <div class="loading-spinner"></div>
             <p class="loading-text">正在加载链接数据...</p>
         `;
         loadingState.style.display = 'block';
+        statsContainer.style.display = 'none'; // 隐藏统计信息
     }
 
-    // 隐藏加载状态 - 优化3
+    // 隐藏加载状态
     function hideLoadingState() {
         loadingState.style.display = 'none';
+        statsContainer.style.display = 'flex'; // 显示统计信息
     }
 
-    // 显示错误状态 - 优化3
+    // 显示错误状态
     function showErrorState(message) {
         loadingState.innerHTML = `
             <div style="color: #ff6b6b; font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
@@ -674,6 +824,7 @@
             <button id="retryButton" class="btn" style="margin-top: 1rem;">重试</button>
         `;
         loadingState.style.display = 'block';
+        statsContainer.style.display = 'none'; // 隐藏统计信息
         
         // 添加重试按钮事件
         document.getElementById('retryButton').addEventListener('click', fetchData);
@@ -838,16 +989,6 @@
 
         // 如果顶部导航不可见，显示侧边栏
         letterNavSideEl.classList.toggle('visible', !isTopNavVisible);
-    }
-
-    // 验证URL
-    function isValidUrl(url) {
-        try {
-            new URL(url);
-            return true;
-        } catch {
-            return false;
-        }
     }
 
     // 搜索处理 - 使用防抖优化
